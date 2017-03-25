@@ -18,6 +18,8 @@ train = pd.read_csv("train.csv")
 
 test = pd.read_csv("test.csv")
 
+holdout = pd.read_csv("holdout.csv")
+
 rotten_selected = rotten_tomatoes.iloc[:, :10]
 
 ## amazon data processing
@@ -195,21 +197,47 @@ def transformation(X):
 X_train,y_train=transformation(train)
 
 test['gold'] = 0
-X_test,y_test = transformation(test)
+X_test, y_test = transformation(test)
+holdout['gold'] = 0
+X_holdout, y_holdout = transformation(holdout)
+
 
 imp = Imputer(strategy="mean").fit(X_train)
 X_train_imp = imp.transform(X_train)
 X_test_imp = imp.transform(X_test)
+X_holdout_imp = imp.transform(X_holdout)
 
-rf = RandomForestClassifier( n_estimators=15, random_state=0)
+# rf = RandomForestClassifier(n_estimators=15)
+# rf.fit(X_train_imp[:,2:5],y_train)
+# rf.score(X_train_imp[:,2:5], y_train)
+
+from sklearn.ensemble import AdaBoostClassifier
+#rf = AdaBoostClassifier(base_estimator=RandomForestClassifier, n_estimators=20)
+
+rf = RandomForestClassifier(n_estimators=200)
+
 rf.fit(X_train_imp[:,2:5],y_train)
+
 rf.score(X_train_imp[:,2:5], y_train)
 
-rf.predict(X_test_imp[:,2:5])
+pred = rf.predict(X_test_imp[:,2:5])
 
 from sklearn.metrics import f1_score,precision_score,recall_score
+
 train_pred=rf.predict(X_train_imp[:,2:5])
+
 print(rf.score(X_train_imp[:,2:5], y_train))
+
 print(f1_score(y_train,train_pred,average="macro"))
+
 print(precision_score(y_train,train_pred,average="macro"))
+
 print(recall_score(y_train,train_pred,average="macro"))
+
+prediction = pd.DataFrame(pred,columns=['gold'])
+
+prediction = prediction.to_csv('gold.csv',index=False)
+
+prediction2 = pd.DataFrame(rf.predict(X_holdout_imp[:, 2:5]), columns=['gold'])
+
+prediction2 = prediction2.to_csv('gold2.csv',index=False)
