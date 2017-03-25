@@ -22,7 +22,6 @@ for i in range(amazon.shape[0]):
         mins = int(timelong.find('minute'))
         comma = int(timelong.find(','))
         if h != -1:
-
             hours = int(timelong[h-2])
             minutes = int(timelong[comma+2:mins-1])
         elif mins != -1:
@@ -96,4 +95,7 @@ def transformation(X):
     y_train=X.iloc[:,2]
     return X_train,y_train
 X_train,y_train=transformation(train)
-        
+# impute
+from sklearn.preprocessing import Imputer
+imp = Imputer(strategy="mean").fit(X_train)
+X_mean_imp = imp.transform(X_train)
