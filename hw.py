@@ -201,8 +201,15 @@ imp = Imputer(strategy="mean").fit(X_train)
 X_train_imp = imp.transform(X_train)
 X_test_imp = imp.transform(X_test)
 
-rf = RandomForestClassifier(n_estimators = 10)
+rf = RandomForestClassifier( n_estimators=15, random_state=0)
 rf.fit(X_train_imp[:,2:5],y_train)
 rf.score(X_train_imp[:,2:5], y_train)
 
 rf.predict(X_test_imp[:,2:5])
+
+from sklearn.metrics import f1_score,precision_score,recall_score
+train_pred=rf.predict(X_train_imp[:,2:5])
+print(rf.score(X_train_imp[:,2:5], y_train))
+print(f1_score(y_train,train_pred,average="macro"))
+print(precision_score(y_train,train_pred,average="macro"))
+print(recall_score(y_train,train_pred,average="macro"))
