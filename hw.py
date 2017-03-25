@@ -26,3 +26,13 @@ for index, row in rotten_selected.iterrows():
         else:
             prob.append(index)
         rotten_selected.set_value(index, 'time', minute)
+rotten_selected = rotten_selected.drop('year',1)
+#combine star1 to star6 into a column of sets star
+rotten_selected['star'] = [set() for x in range(len(rotten_selected.index))]
+for index, row in rotten_selected.iterrows():
+    star=set()
+    for i in range(3,9):
+        if str(row[i])!='nan':
+            star.add(row[i])
+    rotten_selected.set_value(index, 'star',star)  
+rotten_selected = rotten_selected.iloc[:,[0,1,2,9]]
