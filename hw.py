@@ -13,8 +13,7 @@ for i in range(amazon.shape[0]):
     starcol = str(amazon.loc[i]['star']) 
     if bool(re.search(r'\d',starcol)):
         amazon.set_value(i,'time',starcol)
-        amazon.set_value(i,'star',np.nan)
-    # cope with time column
+        amazon.set_value(i,'star',np.nan)    # cope with time column
     timelong = str(amazon.loc[i]['time'])
     if timelong.find('/') != -1:
         amazon.set_value(i, 'time', np.nan)
@@ -23,6 +22,7 @@ for i in range(amazon.shape[0]):
         mins = int(timelong.find('minute'))
         comma = int(timelong.find(','))
         if h != -1:
+
             hours = int(timelong[h-2])
             minutes = int(timelong[comma+2:mins-1])
         elif mins != -1:
@@ -72,3 +72,28 @@ for index, row in rotten_selected.iterrows():
             star.add(row[i])
     rotten_selected.set_value(index, 'star',star)  
 rotten_selected = rotten_selected.iloc[:,[0,1,2,9]]
+# transform training set
+import distance
+def transformation(X):
+    """
+    transform train into standard format
+    """
+    X['time_diff'] = 0
+    X['director_diff'] = 0
+    X['star_diff'] = 0
+    for i in range(X.shape[0]):
+        id_amazon = X.iloc[i,0]
+        id_rotten = X.iloc[i,1]
+        row_amazon = amazon_selected[amazon_selected['id'] == id_amazon]
+        row_rotten = rotten_selected[rotten_selected['id'] == id_rotten]
+        X.iloc[i,3] = np.absolute(float(row_amazon['time']) - float(row_rotten['time']))
+        X.iloc[i,4] = distance.levenshtein(str(row_amazon['director']),str(row_rotten['director']),normalized=True)
+        # the intersection of star names
+        amazon_star=list(row_amazon['star'])[0]
+        rotten_star=list(row_rotten['star'])[0]
+        X.iloc[i,5] = len(amazon_star.intersection(rotten_star))
+    X_train=X.iloc[:,[0,1,3,4,5]]
+    y_train=X.iloc[:,2]
+    return X_train,y_train
+X_train,y_train=transformation(train)
+        
